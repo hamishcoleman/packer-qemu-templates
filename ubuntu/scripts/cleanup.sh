@@ -30,6 +30,22 @@ if [[ ${UBUNTU_VERSION} == 16.04 ]] || [[ ${UBUNTU_VERSION} == 16.10 ]]; then
     # provisioner.
     sed -i "s/ens3/ens5/g" /etc/network/interfaces
 fi
+if [[ ${UBUNTU_VERSION} == 17.10 ]]; then
+    # by default, ubuntu 17.10 uses netplan (from the nplan package), however
+    # that has one fixed config after install - which points to the wrong
+    # devicename after reboot, so install a small stub networkctl config to
+    # manage all ethernet devices
+
+    cat >/etc/systemd/network/95-defaulteth.network <<EOF
+[Match]
+Name=eth* en*
+
+[Network]
+DHCP=yes
+LLDP=true
+EmitLLDP=true
+EOF
+fi
 
 # Add delay to prevent "vagrant reload" from failing
 echo "pre-up sleep 2" >> /etc/network/interfaces
